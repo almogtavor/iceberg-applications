@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: kafka2iceberg
+  main:
+    web-application-type: none
+  kafka:
+    consumer-env:
+      topic: input
+      table-name: meteor
+      bootstrap-servers:
+        - localhost:9093
+      consumer:
+        auto-offset-reset: earliest
+  iceberg:
+    table-name: iceberg_table
+    database-name: kafka2iceberg
+    catalog-type: hive
+  s3:
+    url: http://localhost
+    port: 9000
+    access-key: admin
+    secret-key: password
+    bucket: testbucket
+  jdbc:
+    uri: jdbc:postgresql://localhost:6543/spark_catalog?user=admin
+    username: admin
+    password: password
+  nessie:
+    url: http://localhost:19120/api/v1
+    git-ref: main
+    auth-type: NONE
+
