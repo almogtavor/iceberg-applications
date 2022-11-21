@@ -46,7 +46,7 @@ public class DevSamplePojoKafkaProducer {
                     .itemId(id1)
                     .name("bla")
                     .coolId("some")
-//                    .createdDate(new Date())
+                    .createdDate(new Date())
                     .build()))).get();
             String id2 = "ID2";
             producer.send(new ProducerRecord<>(TOPIC, id2, new ObjectMapper().writeValueAsString(SamplePojo.builder()
@@ -54,7 +54,7 @@ public class DevSamplePojoKafkaProducer {
                     .age(37)
                     .name("bla")
                     .coolId("some")
-//                    .createdDate(new Date())
+                    .createdDate(new Date())
                     .build()))).get();
 
         } catch (ExecutionException | InterruptedException | JsonProcessingException e) {

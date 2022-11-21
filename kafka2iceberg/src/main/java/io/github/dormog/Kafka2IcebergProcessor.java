@@ -1,6 +1,8 @@
 package io.github.dormog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.dormog.configuration.S3Configuration;
+import io.github.dormog.configuration.properties.S3Properties;
 import io.github.dormog.service.IcebergWriter;
 import io.github.dormog.configuration.properties.KafkaConsumerProperties;
 import io.github.dormog.model.SamplePojo;
@@ -9,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
 import org.apache.spark.sql.types.DataTypes;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -23,15 +26,17 @@ import static org.apache.spark.sql.functions.*;
 public class Kafka2IcebergProcessor implements ApplicationRunner {
     private final SparkSession spark;
     private final KafkaConsumerProperties kafkaConsumerProperties;
-    private final ObjectMapper objectMapper;
     private final IcebergWriter icebergWriter;
+    private final S3Configuration s3Configuration;
+    private final S3Properties s3Properties;
+    @Qualifier("schemaPojo") private final Class<?> dataRepresentationPojo;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
-        log.info("GOT HERE SparkStreamingProcessor");
-
-        var schema = ExpressionEncoder.javaBean(SamplePojo.class).schema();
-        System.out.println(schema.json());
+    public void run(ApplicationArguments args) {
+        log.info("Starting Kafka2Iceberg processing");
+        s3Configuration.createBucketIfNotExists(s3Properties.getBucket());
+        var schema = ExpressionEncoder.javaBean(dataRepresentationPojo).schema();
+        log.debug("The schema is: " + schema.json());
         Dataset<Row> df = spark
                 .read()
                 .format("kafka")
@@ -49,13 +54,5 @@ public class Kafka2IcebergProcessor implements ApplicationRunner {
                 "yyyy/MM/dd/HH/mm/SSS"));
         df = df.drop("createdDateTemp");
         icebergWriter.writeDataframe(df, spark);
-//        System.exit(0);
-//        df.printSchema();
-////        df
-////                .writeStream()
-////                .format("console")
-////                .option("truncate","false")
-////                .start();
-//        df.writeTo("local.db.table").append();
     }
 }

@@ -30,7 +30,7 @@ public class S3Configuration {
         DefaultCredentialsProvider credentialsProvider = DefaultCredentialsProvider.builder().build();
         Region region = Region.US_EAST_1;
         s3 = S3Client.builder()
-                .region(region)
+                .forcePathStyle(true)
                 .endpointOverride(new URI(s3Endpoint))
                 .credentialsProvider(() -> AwsBasicCredentials.create(s3Properties.getAccessKey(), s3Properties.getSecretKey()))
                 .build();
@@ -51,9 +51,6 @@ public class S3Configuration {
         try {
             s3.headBucket(headBucketRequest);
         } catch (NoSuchBucketException e) {
-            CreateBucketRequest bucketRequest = CreateBucketRequest.builder()
-                    .bucket(bucketName)
-                    .build();
             s3.createBucket((builder) -> builder.bucket(bucketName).build());
         }
     }
