@@ -2,7 +2,7 @@ plugins {
     id("java")
 }
 
-group = "io.github.almogtavor"
+group = "io.github.dormog"
 version = "1.0-SNAPSHOT"
 
 repositories {

@@ -34,18 +34,12 @@ public class IcebergSnapshotsExpirer implements ActionExecutor {
 
     public void execute(SparkSession spark) {
         try {
-            log.info("GOT HERE DataInitializer");
-            // get catalog from spark
+            log.info("Starting snapshots expiring execution");
             SparkSessionCatalog<V2SessionCatalog> sparkSessionCatalog = (SparkSessionCatalog<V2SessionCatalog>) spark.sessionState().catalogManager().v2SessionCatalog();
             Identifier tableIdentifier = Identifier.of(Namespace.of(icebergProperties.getDatabaseName()).levels(), icebergProperties.getTableName());
-            if (!sparkSessionCatalog.tableExists(tableIdentifier)) {
-                throw new RuntimeException();
-            }
             SparkTable sparkTable = (SparkTable) sparkSessionCatalog.loadTable(tableIdentifier);
             expireSnapshots(sparkTable);
             deleteOrphanFiles(sparkTable);
-            log.warn("------------AFTER API APPEND----------------");
-            spark.sql("select * from " + icebergConfiguration.getTableFullName()).show();
         } catch (NoSuchTableException e) {
             e.printStackTrace();
         }

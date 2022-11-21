@@ -4,11 +4,9 @@ import io.github.dormog.configuration.IcebergConfiguration;
 import io.github.dormog.configuration.properties.IcebergProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.iceberg.actions.MigrateTable;
 import org.apache.iceberg.actions.RewriteDataFiles;
 import org.apache.iceberg.actions.RewriteManifests;
 import org.apache.iceberg.catalog.Namespace;
-import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.spark.SparkSessionCatalog;
 import org.apache.iceberg.spark.actions.SparkActions;
@@ -27,34 +25,37 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class IcebergCompactor implements ActionExecutor {
+public class IcebergManifestsRewriter implements ActionExecutor {
     private final IcebergProperties icebergProperties;
     private final IcebergConfiguration icebergConfiguration;
 
     public void execute(SparkSession spark) {
         try {
+            log.info("Starting manifests rewriting execution");
             SparkSessionCatalog<V2SessionCatalog> sparkSessionCatalog = (SparkSessionCatalog<V2SessionCatalog>) spark.sessionState().catalogManager().v2SessionCatalog();
             Identifier tableIdentifier = Identifier.of(Namespace.of(icebergProperties.getDatabaseName()).levels(), icebergProperties.getTableName());
             SparkTable sparkTable = (SparkTable) sparkSessionCatalog.loadTable(tableIdentifier);
-            compactDataFiles(sparkTable);
+            rewriteManifests(sparkTable);
         } catch (NoSuchTableException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Iceberg can compact data files in parallel using Spark with the rewriteDataFiles action.
+     * Manifests in the metadata tree are automatically compacted in the order they are added,
+     * which makes queries faster when the write pattern aligns with read filters. For example,
+     * writing hourly-partitioned data as it arrives is aligned with time range query filters.
+     *
+     * When a table’s write pattern doesn’t align with the query pattern,
+     * metadata can be rewritten to re-group data files into manifests using rewriteManifests.
      */
-    private void compactDataFiles(SparkTable sparkTable) {
-        RewriteDataFiles.Result result = SparkActions
+    private void rewriteManifests(SparkTable sparkTable) {
+        RewriteManifests.Result result = SparkActions
                 .get()
-                .rewriteDataFiles(sparkTable.table())
+                .rewriteManifests(sparkTable.table())
                 .option("min-input-files", "2")
-//                .filter(Expressions.equal("date", "2020-08-18"))
-//                .filter(Expressions.equal("name", "bla"))
-                .option("target-file-size-bytes", Long.toString(500 * 1024 * 1024)) // 500 MB
+                .rewriteIf(file -> file.length() < 10 * 1024 * 1024) // 10 MB
                 .execute();
-        log.info("The compaction succeeded. The number of added data files is {}, rewrittenDataFilesCount is {}", result.addedDataFilesCount(),
-                result.rewrittenDataFilesCount());
+        System.out.println(result);
     }
 }

@@ -23,7 +23,7 @@ spring:
     auth-type: NONE
 iceberg-maintainer:
   active-tasks:
-    - expire-snapshots
     - compaction
     - rewrite-manifests
+    - expire-snapshots
     - delete-orphans
