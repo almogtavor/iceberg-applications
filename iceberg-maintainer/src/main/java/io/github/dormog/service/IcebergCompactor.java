@@ -34,7 +34,8 @@ public class IcebergCompactor implements ActionExecutor {
     public void execute(SparkSession spark) {
         try {
             SparkSessionCatalog<V2SessionCatalog> sparkSessionCatalog = (SparkSessionCatalog<V2SessionCatalog>) spark.sessionState().catalogManager().v2SessionCatalog();
-            Identifier tableIdentifier = Identifier.of(Namespace.of(icebergProperties.getDatabaseName()).levels(), icebergProperties.getTableName());
+            Namespace namespace = Namespace.of(icebergProperties.getDatabaseName());
+            Identifier tableIdentifier = Identifier.of(namespace.levels(), icebergProperties.getTableName());
             SparkTable sparkTable = (SparkTable) sparkSessionCatalog.loadTable(tableIdentifier);
             compactDataFiles(sparkTable);
         } catch (NoSuchTableException e) {
