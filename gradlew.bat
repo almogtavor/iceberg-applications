@@ -65,7 +65,7 @@ echo location of your Java installation.
 goto fail
 
 :execute
-@rem io.github.dormog.configuration.Setup the command line
+@rem io.github.almogtavor.configuration.Setup the command line
 
 set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
 

@@ -7,7 +7,7 @@ services:
     depends_on:
       - mongo
     environment:
-      - nessie.version.store.type=MONGO
+      - nessie.version.store.type=mongodb
       - quarkus.mongodb.database=nessie
       - quarkus.mongodb.connection-string=mongodb://root:password@mongo:27017
   mongo:
