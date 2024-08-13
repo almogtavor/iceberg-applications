@@ -5,9 +5,14 @@ Currently, the existing applications are:
 * `kafka2iceberg` - A pipeline that reads data from Kafka and writes to Iceberg.
 * `iceberg-maintainer` - A program that executes Iceberg maintenance tasks.
 
-## Local Usage & Development,
+<details>
+<summary>
+For Local Usage & Development:
+</summary>
 
-### Step 1:Step 1: Set Up the Environment Using Docker Compose 
+## Local Usage & Development
+
+### Step 1: Set Up the Environment Using Docker Compose
 
 To run iceberg-application locally, you need to set up the required environment using Docker Compose.
 
@@ -57,3 +62,5 @@ Enter `locahost:9001`, and checkout your bucket to verify the Kafka2Iceberg have
 ### Step 5: Run the Iceberg Maintainer
 * Run the iceberg-maintainer application in the same manner as Kafka2Iceberg.
 * After the files have been merged, check your MinIO bucket again to see the changes.
+
+</details>
